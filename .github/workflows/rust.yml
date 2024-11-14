@@ -1,0 +1,29 @@
+name: Rust
+permissions: write-all
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKSPACE: ${{github.WORKSPACE}}
+  GH_TOKEN: ${{github.TOKEN}}
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Archive + Release
+      run: |
+        Set-Location "$env:WORKSPACE"
+        $binpath = Get-ChildItem -Path . -Filter 'snippeteer.exe'
+        $zippath = Compress-Archive -Path $binpath -DestinationPath "$env:WORKSPACE/snippeteer_v1.0.zip"
+        gh release create v1.0 "$zippath" -t Snippeteer_v1.0
+        
+        
